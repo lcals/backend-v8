@@ -252,11 +252,11 @@ jobs:
         mv ~/v8/v8/output/v8 ~/v8/v8/output/v8_${{github.event.inputs.v8_revision}}
     - uses: actions/upload-artifact@v4
       with:
-        name: v8_bin
+        name: v8_bin_1
         path: ~/v8/v8/output/**/*
         
   build_windows_md:
-    if: github.event.inputs.build_windows == 'true'
+    if: github.event.inputs.build_windows == 'true1'
     name: Windows-MD
     runs-on: windows-2019
     steps:
@@ -282,7 +282,7 @@ jobs:
         path: ~/v8/v8/output/**/*
         
   build_windows_md_dll:
-    if: github.event.inputs.build_windows == 'true'
+    if: github.event.inputs.build_windows == 'true1'
     name: Windows-MD-DLL
     runs-on: windows-2019
     steps:
@@ -304,7 +304,7 @@ jobs:
         path: ~/v8/v8/output/**/*
         
   build_windows_32:
-    if: github.event.inputs.build_windows == 'true'
+    if: github.event.inputs.build_windows == 'true1'
     name: Windows-32
     runs-on: windows-2019
     steps:
@@ -330,7 +330,7 @@ jobs:
         path: ~/v8/v8/output/**/*
         
   build_windows_v8cc_arm64:
-    if: github.event.inputs.build_windows == 'true'
+    if: github.event.inputs.build_windows == 'true1'
     name: Windows-v8cc-arm64
     runs-on: windows-2019
     steps:
@@ -351,7 +351,7 @@ jobs:
         path: ~/v8/v8/output/**/*
   
   build_windows_v8cc_arm:
-    if: github.event.inputs.build_windows == 'true'
+    if: github.event.inputs.build_windows == 'true1'
     name: Windows-v8cc-arm
     runs-on: windows-2019
     steps:
