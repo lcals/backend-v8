@@ -78,7 +78,7 @@ node %~dp0\node-script\patchs.js . %VERSION% %NEW_WRAP%
 
 echo =====[ Building V8 ]=====
 if "%VERSION%"=="9.4.146.24" (
-    call gn gen out.gn\x64.release -args="target_os=""win"" target_cpu=""x64"" v8_use_external_startup_data=false v8_enable_i18n_support=false is_debug=false %CXX_SETTING% strip_debug_info=true symbol_level=0 v8_enable_pointer_compression=false is_component_build=true"
+    call gn gen out.gn\x64.debug -args="target_os=""win"" target_cpu=""x64"" v8_use_external_startup_data=false v8_enable_i18n_support=false is_debug=true %CXX_SETTING% v8_enable_pointer_compression=false is_component_build=true"
 ) else if "%VERSION%"=="10.6.194" (
     call gn gen out.gn\x64.release -args="target_os=""win"" target_cpu=""x64"" v8_use_external_startup_data=false v8_enable_i18n_support=false is_debug=false %CXX_SETTING% strip_debug_info=true symbol_level=0 v8_enable_pointer_compression=false is_component_build=true v8_enable_sandbox=false"
 ) else if "%VERSION%"=="11.8.172" (
@@ -87,47 +87,53 @@ if "%VERSION%"=="9.4.146.24" (
     call gn gen out.gn\x64.release -args="target_os=""win"" target_cpu=""x64"" v8_use_external_startup_data=false v8_enable_i18n_support=false is_debug=false is_clang=true use_custom_libcxx=true strip_debug_info=true symbol_level=0 v8_enable_pointer_compression=false is_component_build=true v8_enable_sandbox=false v8_enable_maglev=false v8_enable_webassembly=false cppgc_enable_caged_heap=false"
 )
 
-call ninja -C out.gn\x64.release -t clean
+if "%VERSION%"=="9.4.146.24" (
+    set "BUILD_DIR=out.gn\x64.debug"
+) else (
+    set "BUILD_DIR=out.gn\x64.release"
+)
+
+call ninja -C %BUILD_DIR% -t clean
 if "%NEW_WRAP%"=="with_new_wrap" (
   copy /Y %~dp0\node-script\win_compile_and_objcopy.js tools
-  node -e "const fs = require('fs'); fs.writeFileSync('out.gn/x64.release/toolchain.ninja', fs.readFileSync('out.gn/x64.release/toolchain.ninja', 'utf-8').replace(/(rule cxx[\s\S]*?command\s*=\s*)(.*clang-cl\.exe.*)/g, '$1node ..\\..\\tools\\win_compile_and_objcopy.js $2'));
+  node -e "var d='%BUILD_DIR%'.replace(/\\/g,'/'); const fs = require('fs'); fs.writeFileSync(d+'/toolchain.ninja', fs.readFileSync(d+'/toolchain.ninja', 'utf-8').replace(/(rule cxx[\s\S]*?command\s*=\s*)(.*clang-cl\.exe.*)/g, '$1node ..\\..\\tools\\win_compile_and_objcopy.js $2'));"
 )
-call ninja -v -C out.gn\x64.release v8
+call ninja -v -C %BUILD_DIR% v8
 
 md output\v8\Lib\Win64DLL
-copy /Y out.gn\x64.release\v8.dll.lib output\v8\Lib\Win64DLL\
-copy /Y out.gn\x64.release\v8_libplatform.dll.lib output\v8\Lib\Win64DLL\
-copy /Y out.gn\x64.release\v8.dll output\v8\Lib\Win64DLL\
-copy /Y out.gn\x64.release\v8_libbase.dll output\v8\Lib\Win64DLL\
-copy /Y out.gn\x64.release\v8_libplatform.dll output\v8\Lib\Win64DLL\
-copy /Y out.gn\x64.release\v8.dll.pdb output\v8\Lib\Win64DLL\
-copy /Y out.gn\x64.release\v8_libbase.dll.pdb output\v8\Lib\Win64DLL\
-copy /Y out.gn\x64.release\v8_libplatform.dll.pdb output\v8\Lib\Win64DLL\
+copy /Y %BUILD_DIR%\v8.dll.lib output\v8\Lib\Win64DLL\
+copy /Y %BUILD_DIR%\v8_libplatform.dll.lib output\v8\Lib\Win64DLL\
+copy /Y %BUILD_DIR%\v8.dll output\v8\Lib\Win64DLL\
+copy /Y %BUILD_DIR%\v8_libbase.dll output\v8\Lib\Win64DLL\
+copy /Y %BUILD_DIR%\v8_libplatform.dll output\v8\Lib\Win64DLL\
+copy /Y %BUILD_DIR%\v8.dll.pdb output\v8\Lib\Win64DLL\
+copy /Y %BUILD_DIR%\v8_libbase.dll.pdb output\v8\Lib\Win64DLL\
+copy /Y %BUILD_DIR%\v8_libplatform.dll.pdb output\v8\Lib\Win64DLL\
 
 if "%VERSION%"=="11.8.172" (
-  copy /Y out.gn\x64.release\third_party_zlib.dll output\v8\Lib\Win64DLL\
-  copy /Y out.gn\x64.release\third_party_zlib.dll.pdb output\v8\Lib\Win64DLL\
-  copy /Y out.gn\x64.release\third_party_abseil-cpp_absl.dll output\v8\Lib\Win64DLL\
-  copy /Y out.gn\x64.release\third_party_abseil-cpp_absl.dll.pdb output\v8\Lib\Win64DLL\
+  copy /Y %BUILD_DIR%\third_party_zlib.dll output\v8\Lib\Win64DLL\
+  copy /Y %BUILD_DIR%\third_party_zlib.dll.pdb output\v8\Lib\Win64DLL\
+  copy /Y %BUILD_DIR%\third_party_abseil-cpp_absl.dll output\v8\Lib\Win64DLL\
+  copy /Y %BUILD_DIR%\third_party_abseil-cpp_absl.dll.pdb output\v8\Lib\Win64DLL\
 ) else if "%VERSION%"=="12.9.202.27" (
-  copy /Y out.gn\x64.release\third_party_zlib.dll output\v8\Lib\Win64DLL\
-  copy /Y out.gn\x64.release\third_party_zlib.dll.pdb output\v8\Lib\Win64DLL\
-  copy /Y out.gn\x64.release\third_party_abseil-cpp_absl.dll output\v8\Lib\Win64DLL\
-  copy /Y "out.gn\x64.release\libc++.dll" output\v8\Lib\Win64DLL\
-  copy /Y "out.gn\x64.release\libc++.dll.lib" output\v8\Lib\Win64DLL\
-  copy /Y "out.gn\x64.release\libc++.dll.pdb" output\v8\Lib\Win64DLL\
-  copy /Y out.gn\x64.release\third_party_abseil-cpp_absl.dll.lib output\v8\Lib\Win64DLL\
-  copy /Y out.gn\x64.release\third_party_abseil-cpp_absl.dll.pdb output\v8\Lib\Win64DLL\
+  copy /Y %BUILD_DIR%\third_party_zlib.dll output\v8\Lib\Win64DLL\
+  copy /Y %BUILD_DIR%\third_party_zlib.dll.pdb output\v8\Lib\Win64DLL\
+  copy /Y %BUILD_DIR%\third_party_abseil-cpp_absl.dll output\v8\Lib\Win64DLL\
+  copy /Y "%BUILD_DIR%\libc++.dll" output\v8\Lib\Win64DLL\
+  copy /Y "%BUILD_DIR%\libc++.dll.lib" output\v8\Lib\Win64DLL\
+  copy /Y "%BUILD_DIR%\libc++.dll.pdb" output\v8\Lib\Win64DLL\
+  copy /Y %BUILD_DIR%\third_party_abseil-cpp_absl.dll.lib output\v8\Lib\Win64DLL\
+  copy /Y %BUILD_DIR%\third_party_abseil-cpp_absl.dll.pdb output\v8\Lib\Win64DLL\
 ) else if "%VERSION%"=="13.6.233.17" (
-  copy /Y out.gn\x64.release\third_party_zlib.dll output\v8\Lib\Win64DLL\
-  copy /Y out.gn\x64.release\third_party_zlib.dll.pdb output\v8\Lib\Win64DLL\
-  copy /Y out.gn\x64.release\third_party_abseil-cpp_absl.dll output\v8\Lib\Win64DLL\
-  copy /Y "out.gn\x64.release\libc++.dll" output\v8\Lib\Win64DLL\
-  copy /Y "out.gn\x64.release\libc++.dll.lib" output\v8\Lib\Win64DLL\
-  copy /Y "out.gn\x64.release\libc++.dll.pdb" output\v8\Lib\Win64DLL\
-  copy /Y out.gn\x64.release\third_party_abseil-cpp_absl.dll.lib output\v8\Lib\Win64DLL\
-  copy /Y out.gn\x64.release\third_party_abseil-cpp_absl.dll.pdb output\v8\Lib\Win64DLL\
+  copy /Y %BUILD_DIR%\third_party_zlib.dll output\v8\Lib\Win64DLL\
+  copy /Y %BUILD_DIR%\third_party_zlib.dll.pdb output\v8\Lib\Win64DLL\
+  copy /Y %BUILD_DIR%\third_party_abseil-cpp_absl.dll output\v8\Lib\Win64DLL\
+  copy /Y "%BUILD_DIR%\libc++.dll" output\v8\Lib\Win64DLL\
+  copy /Y "%BUILD_DIR%\libc++.dll.lib" output\v8\Lib\Win64DLL\
+  copy /Y "%BUILD_DIR%\libc++.dll.pdb" output\v8\Lib\Win64DLL\
+  copy /Y %BUILD_DIR%\third_party_abseil-cpp_absl.dll.lib output\v8\Lib\Win64DLL\
+  copy /Y %BUILD_DIR%\third_party_abseil-cpp_absl.dll.pdb output\v8\Lib\Win64DLL\
 ) else (
-  copy /Y out.gn\x64.release\zlib.dll output\v8\Lib\Win64DLL\
-  copy /Y out.gn\x64.release\zlib.dll.pdb output\v8\Lib\Win64DLL\
+  copy /Y %BUILD_DIR%\zlib.dll output\v8\Lib\Win64DLL\
+  copy /Y %BUILD_DIR%\zlib.dll.pdb output\v8\Lib\Win64DLL\
 )
