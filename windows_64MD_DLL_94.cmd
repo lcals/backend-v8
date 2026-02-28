@@ -96,7 +96,7 @@ if "%VERSION%"=="9.4.146.24" (
 call ninja -C %BUILD_DIR% -t clean
 if "%NEW_WRAP%"=="with_new_wrap" (
   copy /Y %~dp0\node-script\win_compile_and_objcopy.js tools
-  node -e "const fs = require('fs'); fs.writeFileSync('%BUILD_DIR%/toolchain.ninja', fs.readFileSync('%BUILD_DIR%/toolchain.ninja', 'utf-8').replace(/(rule cxx[\s\S]*?command\s*=\s*)(.*clang-cl\.exe.*)/g, '$1node ..\\..\\tools\\win_compile_and_objcopy.js $2'));
+  node -e "var d='%BUILD_DIR%'.replace(/\\/g,'/'); const fs = require('fs'); fs.writeFileSync(d+'/toolchain.ninja', fs.readFileSync(d+'/toolchain.ninja', 'utf-8').replace(/(rule cxx[\s\S]*?command\s*=\s*)(.*clang-cl\.exe.*)/g, '$1node ..\\..\\tools\\win_compile_and_objcopy.js $2'));"
 )
 call ninja -v -C %BUILD_DIR% v8
 
