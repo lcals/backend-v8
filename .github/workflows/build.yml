@@ -16,7 +16,7 @@ on:
         - "11.8.172"
         - "12.9.202.27"
         - "13.6.233.17"
-        default: '11.8.172'
+        default: '9.4.146.24'
         required: true
       wrap_new:
         description: 'wrap new/delete'
@@ -29,37 +29,42 @@ on:
       build_android:
         description: 'Build for Android platform'
         type: boolean
-        default: true
+        default: false
         required: false
       build_ohos:
         description: 'Build for OHOS platform'
         type: boolean
-        default: true
+        default: false
         required: false
       build_ios:
         description: 'Build for iOS platform'
         type: boolean
-        default: true
+        default: false
         required: false
       build_windows:
         description: 'Build for Windows platform'
         type: boolean
         default: true
         required: false
+      build_windows_dll_only:
+        description: 'Build only Windows DLL (skip other Windows builds)'
+        type: boolean
+        default: true
+        required: false
       build_macos:
         description: 'Build for MacOS platform'
         type: boolean
-        default: true
+        default: false
         required: false
       build_macos_silicon:
         description: 'Build for MacOS(silicon) platform'
         type: boolean
-        default: true
+        default: false
         required: false
       build_linux:
         description: 'Build for Linux platform'
         type: boolean
-        default: true
+        default: false
         required: false
   
 
@@ -256,7 +261,7 @@ jobs:
         path: ~/v8/v8/output/**/*
 
   build_windows:
-    if: github.event.inputs.build_windows == 'true'
+    if: github.event.inputs.build_windows == 'true' && github.event.inputs.build_windows_dll_only != 'true'
     name: Windows
     runs-on: windows-2022
     steps:
@@ -289,7 +294,7 @@ jobs:
         path: ~/v8/v8/output/**/*
         
   build_windows_md:
-    if: github.event.inputs.build_windows == 'true'
+    if: github.event.inputs.build_windows == 'true' && github.event.inputs.build_windows_dll_only != 'true'
     name: Windows-MD
     runs-on: windows-2022
     steps:
@@ -351,7 +356,7 @@ jobs:
         path: ~/v8/v8/output/**/*
         
   build_windows_32:
-    if: github.event.inputs.build_windows == 'true'
+    if: github.event.inputs.build_windows == 'true' && github.event.inputs.build_windows_dll_only != 'true'
     name: Windows-32
     runs-on: windows-2022
     steps:
@@ -384,7 +389,7 @@ jobs:
         path: ~/v8/v8/output/**/*
         
   build_windows_v8cc_arm64:
-    if: github.event.inputs.build_windows == 'true'
+    if: github.event.inputs.build_windows == 'true' && github.event.inputs.build_windows_dll_only != 'true'
     name: Windows-v8cc-arm64
     runs-on: windows-2022
     steps:
@@ -413,7 +418,7 @@ jobs:
         path: ~/v8/v8/output/**/*
   
   build_windows_v8cc_arm:
-    if: github.event.inputs.build_windows == 'true'
+    if: github.event.inputs.build_windows == 'true' && github.event.inputs.build_windows_dll_only != 'true'
     name: Windows-v8cc-arm
     runs-on: windows-2022
     steps:
