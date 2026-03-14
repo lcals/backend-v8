@@ -6,12 +6,12 @@ on:
       release_tag:
         description: "GitHub Release tag used by Game repo"
         required: true
-        default: "11.8.172"
+        default: "V8_9.4.146.24__241009"
         type: string
       v8_revision:
         description: "V8 TAG(Branch) to build"
         required: true
-        default: "11.8.172"
+        default: "9.4.146.24"
         type: choice
         options:
           - "9.4.146.24"
