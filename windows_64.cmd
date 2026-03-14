@@ -103,5 +103,5 @@ echo =====[ Copy V8 header ]=====
 xcopy include output\v8\Inc\  /s/h/e/k/f/c
 
 md output\v8\Bin\Win64
-copy /Y out.gn\x64.release\v8cc.exe output\v8\Bin\Win64\
-copy /Y out.gn\x64.release\mksnapshot.exe output\v8\Bin\Win64\
+if exist out.gn\x64.release\v8cc.exe copy /Y out.gn\x64.release\v8cc.exe output\v8\Bin\Win64\
+if exist out.gn\x64.release\mksnapshot.exe copy /Y out.gn\x64.release\mksnapshot.exe output\v8\Bin\Win64\
