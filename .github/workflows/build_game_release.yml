@@ -143,9 +143,13 @@ jobs:
           New-Item -ItemType Directory -Force -Path (Join-Path $assetRoot "lib/windows/x64/debug") | Out-Null
           New-Item -ItemType Directory -Force -Path (Join-Path $assetRoot "lib/windows/x64/release") | Out-Null
           Copy-Item "$env:USERPROFILE\v8\v8\include\*" (Join-Path $assetRoot "Inc") -Recurse -Force
-          $libSource = "$env:USERPROFILE\v8\v8\output\v8\Lib\Win64\wee8.lib"
-          if (-not (Test-Path $libSource)) { $libSource = "$env:USERPROFILE\v8\v8\out.gn\x64.release\obj\wee8.lib" }
-          if (-not (Test-Path $libSource)) { $libSource = "$env:USERPROFILE\v8\v8\out.gn\x64.release\obj\v8_monolith.lib" }
+          $libCandidates = Get-ChildItem -Path "$env:USERPROFILE\v8\v8" -Recurse -Include wee8.lib,v8_monolith.lib -ErrorAction SilentlyContinue |
+            Sort-Object FullName
+          if (-not $libCandidates) {
+            throw "Windows build completed but no wee8.lib/v8_monolith.lib was found under $env:USERPROFILE\v8\v8"
+          }
+          $libSource = $libCandidates[0].FullName
+          Write-Host "Using Windows lib source: $libSource"
           Copy-Item $libSource (Join-Path $assetRoot "lib/windows/x64/debug/wee8.lib") -Force
           Copy-Item $libSource (Join-Path $assetRoot "lib/windows/x64/release/wee8.lib") -Force
           Compress-Archive -Path (Join-Path $assetRoot "*") -DestinationPath "$env:GITHUB_WORKSPACE\backend-v8-windows-x64.zip" -Force
