@@ -26,12 +26,28 @@ on:
         options:
           - ""
           - "with_new_wrap"
+      build_linux:
+        description: "Build Linux asset"
+        required: false
+        default: true
+        type: boolean
+      build_macos:
+        description: "Build macOS asset"
+        required: false
+        default: true
+        type: boolean
+      build_windows:
+        description: "Build Windows asset"
+        required: false
+        default: true
+        type: boolean
 
 permissions:
   contents: write
 
 jobs:
   build-linux:
+    if: github.event.inputs.build_linux == 'true'
     name: Linux x64
     runs-on: ubuntu-22.04
     steps:
@@ -67,6 +83,7 @@ jobs:
           path: backend-v8-linux-x64.zip
 
   build-macos:
+    if: github.event.inputs.build_macos == 'true'
     name: macOS arm64
     runs-on: macos-14
     steps:
@@ -102,6 +119,7 @@ jobs:
           path: backend-v8-macos-arm64.zip
 
   build-windows:
+    if: github.event.inputs.build_windows == 'true'
     name: Windows x64
     runs-on: windows-2022
     steps:
@@ -125,8 +143,11 @@ jobs:
           New-Item -ItemType Directory -Force -Path (Join-Path $assetRoot "lib/windows/x64/debug") | Out-Null
           New-Item -ItemType Directory -Force -Path (Join-Path $assetRoot "lib/windows/x64/release") | Out-Null
           Copy-Item "$env:USERPROFILE\v8\v8\include\*" (Join-Path $assetRoot "Inc") -Recurse -Force
-          Copy-Item "$env:USERPROFILE\v8\v8\output\v8\Lib\Win64\wee8.lib" (Join-Path $assetRoot "lib/windows/x64/debug/wee8.lib") -Force
-          Copy-Item "$env:USERPROFILE\v8\v8\output\v8\Lib\Win64\wee8.lib" (Join-Path $assetRoot "lib/windows/x64/release/wee8.lib") -Force
+          $libSource = "$env:USERPROFILE\v8\v8\output\v8\Lib\Win64\wee8.lib"
+          if (-not (Test-Path $libSource)) { $libSource = "$env:USERPROFILE\v8\v8\out.gn\x64.release\obj\wee8.lib" }
+          if (-not (Test-Path $libSource)) { $libSource = "$env:USERPROFILE\v8\v8\out.gn\x64.release\obj\v8_monolith.lib" }
+          Copy-Item $libSource (Join-Path $assetRoot "lib/windows/x64/debug/wee8.lib") -Force
+          Copy-Item $libSource (Join-Path $assetRoot "lib/windows/x64/release/wee8.lib") -Force
           Compress-Archive -Path (Join-Path $assetRoot "*") -DestinationPath "$env:GITHUB_WORKSPACE\backend-v8-windows-x64.zip" -Force
       - uses: actions/upload-artifact@v4
         with:
@@ -136,6 +157,7 @@ jobs:
   publish:
     name: Publish Release
     runs-on: ubuntu-latest
+    if: github.event.inputs.build_linux == 'true' && github.event.inputs.build_macos == 'true' && github.event.inputs.build_windows == 'true'
     needs:
       - build-linux
       - build-macos
